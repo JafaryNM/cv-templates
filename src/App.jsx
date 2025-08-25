@@ -1,16 +1,25 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
+import TemplateA from "./templates/Template_A";
+import TemplateB from "./templates/Template_B";
+import TemplateC from "./templates/Template_C";
+import TemplateD from "./templates/Template_D";
+import TemplateE from "./templates/Template_E";
+import TemplateF from "./templates/Template_F";
+import TemplateG from "./templates/Template_G";
+import TemplateH from "./templates/Template_H";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
-      <div className="container mt-5">
-        <h1 className="text-primary">Hello Bootstrap in React!</h1>
-        <button className="btn btn-success">Click Me</button>
+      <div className="">
+        <TemplateA />
+        <TemplateB />
+        <TemplateC />
+        <TemplateD />
+        <TemplateE />
+        <TemplateF />
+        <TemplateG />
+        <TemplateH />
       </div>
     </>
   );
