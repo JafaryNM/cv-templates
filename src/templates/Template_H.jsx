@@ -12,9 +12,12 @@ const TemplateH = () => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
+
         return res.json();
       })
       .then((data) => {
+        console.log(data.data);
+
         setData(data);
         setLoading(false);
       })
@@ -27,14 +30,17 @@ const TemplateH = () => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const profile = data.applicant_profile || {};
-  const experiences = data.experience || [];
-  const education = data.education || [];
-  const skills = data.knowledge || [];
+  const payload = data?.data || {}; // 👈 unwrap first
+
+  const profile = payload?.applicant_profile || {};
+  const experiences = payload.experience || [];
+  const users = payload.user || [];
+  const education = payload.education || [];
+  const skills = payload.knowledge || [];
   const contact = {
-    phone: data.phone?.number,
-    email: data.email?.email,
-    address: data.address?.street,
+    phone: payload.phone?.number,
+    email: payload.email?.email,
+    address: payload.address?.street,
   };
 
   return (
@@ -53,13 +59,15 @@ const TemplateH = () => {
       <Row className="text-start">
         {/* LEFT SECTION */}
         <Col md={8} className="bg-white shadow-sm p-4">
-          <h2 className="fw-bold">{profile.fullname}</h2>
+          <h2 className="fw-bold">{profile?.first_name}</h2>
           <p className="text-muted">{profile.title || "Professional"}</p>
 
           {/* Career Objective */}
           <div className="text-start mb-4">
             <h4>Career Objective</h4>
-            <p>{data.objective || "No objective provided."}</p>
+            <p className="text-sm">
+              {payload.objective.objective || "No objective provided."}
+            </p>
           </div>
 
           {/* Contact Info */}
@@ -68,17 +76,12 @@ const TemplateH = () => {
               <Card.Title className="fw-semibold text-uppercase mb-2">
                 Contact Me
               </Card.Title>
-              <ListGroup variant="flush" className="text-start">
-                {contact.phone && (
-                  <ListGroup.Item>📞 {contact.phone}</ListGroup.Item>
-                )}
-                <ListGroup.Item>🌐 {profile.website || "N/A"}</ListGroup.Item>
-                {contact.email && (
-                  <ListGroup.Item>✉️ {contact.email}</ListGroup.Item>
-                )}
-                {contact.address && (
-                  <ListGroup.Item>🏠 {contact.address}</ListGroup.Item>
-                )}
+              <ListGroup variant="flush" className="text-start text-xs">
+                <ListGroup.Item>📞 {payload.phone.phone_number}</ListGroup.Item>
+                {users.map((user) => (
+                  <ListGroup.Item>✉️ {user?.email}</ListGroup.Item>
+                ))}
+                <ListGroup.Item>🏠 {contact.address}</ListGroup.Item>
               </ListGroup>
             </Card.Body>
           </Card>
@@ -94,17 +97,18 @@ const TemplateH = () => {
                 experiences.map((exp, index) => (
                   <div key={index} className="mb-4 text-start">
                     <h6 className="fw-bold d-flex justify-content-between">
-                      {exp.position?.position || "Job Title"}{" "}
+                      {exp.position?.position_name || "Job Title"}{" "}
                       <span className="text-muted">
                         {exp.start_date} - {exp.end_date || "Present"}
                       </span>
                     </h6>
-                    <p className="mb-1 text-muted">
+                    <p className="mb-1 text-muted text-xs">
                       <em>
-                        {exp.employer?.name} / {exp.industry?.industry}
+                        {exp.employer?.employer_name} /{" "}
+                        {exp.industry?.industry_name}
                       </em>
                     </p>
-                    <p className="small">{exp.description}</p>
+                    <p className="small">{exp.responsibility}</p>
                   </div>
                 ))
               ) : (
@@ -156,7 +160,7 @@ const TemplateH = () => {
           </div>
 
           {/* Skills */}
-          <div>
+          {/* <div>
             <h5 className="border-bottom pb-1 text-uppercase">Skills</h5>
             {skills.length > 0 ? (
               <ul className="small ps-3 text-start">
@@ -167,7 +171,7 @@ const TemplateH = () => {
             ) : (
               <p>No skills listed.</p>
             )}
-          </div>
+          </div> */}
         </Col>
       </Row>
     </Container>
