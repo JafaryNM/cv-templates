@@ -85,11 +85,23 @@ const TemplateH = () => {
                   payload?.experience?.[0]?.position?.position_name ||
                   "No Position Available"}
               </h2>
+            </>
+          ))}
+
+          {/* About */}
+          <Card className="border-0 p-0">
+            <CardTitle
+              className="fw-semibold text-uppercase mb-2"
+              style={{ fontSize: "1rem" }}
+            >
+              About
+            </CardTitle>
+            <CardBody className="p-0">
               <p className="lead mb-3" style={{ fontSize: "0.9rem" }}>
                 {payload?.careers?.[0]?.career || "No career information"}
               </p>
-            </>
-          ))}
+            </CardBody>
+          </Card>
 
           {/* Career Objective */}
           <Card className="border-0 p-0">
