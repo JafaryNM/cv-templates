@@ -45,6 +45,7 @@ const TemplateH = () => {
   const personalities = payload?.applicant_personality || [];
   const experiences = payload.experience || [];
   const referees = payload.referees || [];
+  const languages = payload.language || [];
   const users = payload.user || [];
   const addresses = payload.address || [];
   const education = payload.education || [];
@@ -73,17 +74,33 @@ const TemplateH = () => {
         <Col md={8} className="bg-white shadow-sm p-4">
           {profiles.map((profile) => (
             <>
-              <h2 className="fw-bold">{`${profile.first_name} ${profile.middle_name} ${profile.last_name}`}</h2>
+              <h2
+                className="fw-bold text-uppercase"
+                style={{ fontSize: "1rem" }}
+              >
+                {`${profile.first_name} ${profile.middle_name} ${profile.last_name}`}
+              </h2>
+              <h2 className="h3 mb-3" style={{ fontSize: "0.9rem" }}>
+                {payload?.current_position ||
+                  payload?.experience?.[0]?.position?.position_name ||
+                  "No Position Available"}
+              </h2>
+              <p className="lead mb-3" style={{ fontSize: "0.9rem" }}>
+                {payload?.careers?.[0]?.career || "No career information"}
+              </p>
             </>
           ))}
 
           {/* Career Objective */}
           <Card className="border-0 p-0">
-            <CardBody>
-              <CardTitle className="fw-semibold text-uppercase mb-4">
-                Career Objective
-              </CardTitle>
-              <p className="text-sm">
+            <CardTitle
+              className="fw-semibold text-uppercase mb-2"
+              style={{ fontSize: "1rem" }}
+            >
+              Career Objective
+            </CardTitle>
+            <CardBody className="p-0">
+              <p style={{ fontSize: "0.9rem" }}>
                 {payload.objective.objective || "No objective provided."}
               </p>
             </CardBody>
@@ -91,26 +108,39 @@ const TemplateH = () => {
 
           {/* Job Experience */}
           <Card className="border-0 p-0">
-            <Card.Body>
-              <Card.Title className="fw-semibold text-uppercase mb-4">
-                Job Experience
-              </Card.Title>
-
+            <Card.Title
+              className="fw-semibold text-uppercase mb-2"
+              style={{ fontSize: "1rem" }}
+            >
+              Job Experience
+            </Card.Title>
+            <Card.Body className="p-0" style={{ fontSize: "0.9rem" }}>
               {experiences.length > 0 ? (
                 experiences.map((exp, index) => (
                   <div key={index} className="mb-4 text-start">
-                    <h6 className="fw-bold d-flex justify-content-between">
-                      {exp.position?.position_name || "Job Title"}{" "}
-                      <span className="small text-muted">
-                        {exp.start_date} - {exp.end_date || "Present"}
-                      </span>
-                    </h6>
-                    <p className="mb-1 text-muted ">
-                      <em>
-                        {exp.employer?.employer_name} /{" "}
-                        {exp.industry?.industry_name}
-                      </em>
+                    <div className=" d-flex justify-content-between">
+                      <h6 className="fw-bold text-capitalize">
+                        {exp.position?.position_name || "Job Title"}
+                      </h6>
+                      <p className="small text-muted">
+                        {exp?.start_date
+                          ? new Date(exp.start_date).getFullYear()
+                          : ""}{" "}
+                        -{" "}
+                        {exp?.end_date
+                          ? new Date(exp.end_date).getFullYear()
+                          : "Present"}
+                      </p>
+                    </div>
+                    <p className="mb-1 small text-muted ">
+                      {exp.employer?.employer_name} /{" "}
+                      {exp.industry?.industry_name}
                     </p>
+                    <p className="text-muted small">
+                      {exp?.employer?.region?.region_name},{" "}
+                      {exp?.employer?.sub_location}
+                    </p>
+
                     {/* <p className="small">{exp.responsibility}</p> */}
                     {exp.responsibility && (
                       <ul className="small mb-0">
@@ -131,31 +161,59 @@ const TemplateH = () => {
             </Card.Body>
           </Card>
 
-          {/* Job Experience */}
+          {/* Skills and Endorsment */}
           <Card className="border-0 p-0">
-            <Card.Body>
-              <Card.Title className="fw-semibold text-uppercase mb-4">
-                Referees
-              </Card.Title>
-
-              {referees.length > 0 ? (
-                referees.map((referee, index) => (
-                  <div key={index} className="mb-4 text-start">
-                    <h6 className="fw-bold d-flex justify-content-between">
-                      {`${referee.first_name} ${referee.middle_name} ${referee.last_name}`}
-                    </h6>
-                    <p className="mb-1 text-muted ">
-                      {referee.referee_position}
-                    </p>
-                    <p className="small">{referee.employer}</p>
-                    <p className="small">{referee.email}</p>
-                    <p className="small">{referee.phone}</p>
-                  </div>
-                ))
-              ) : (
-                <p>No job experience added.</p>
-              )}
-            </Card.Body>
+            <CardTitle
+              className="fw-semibold text-uppercase mb-2"
+              style={{ fontSize: "1rem" }}
+            >
+              Skills & Endorsements
+            </CardTitle>
+            <CardBody className="p-0" style={{ fontSize: "0.9rem" }}>
+              <div className="d-flex align-items-center gap-5 mb-2">
+                <p className="fw-semibold mb-0">Culture Fit:</p>
+                {payload.culture.map((c) => (
+                  <p className="small mb-0">{c.culture.culture_name}</p>
+                ))}
+              </div>
+              {/* personality */}
+              <div className="d-flex align-items-center gap-5 mb-2">
+                <p className="fw-semibold mb-0">Personality:</p>
+                <p className="small mb-0">
+                  {personalities
+                    .map(
+                      (personality) => personality.personality.personality_name
+                    )
+                    .join(", ")}
+                </p>
+              </div>
+              {/* software */}
+              <div className="d-flex align-items-center gap-5 mb-2">
+                <p className="fw-semibold mb-0">Software</p>
+                <p className="small mb-0">
+                  {payload.software
+                    .map((s) => s.software.software_name)
+                    .join(", ")}
+                </p>
+              </div>
+              {/* knowledge */}
+              <div className="d-flex align-items-center gap-5 mb-2">
+                <p className="fw-semibold mb-0">Skills & Knowledge</p>
+                <p className="small mb-0">
+                  {payload.knowledge
+                    .map((k) => k.knowledge.knowledge_name)
+                    .join(", ")}
+                </p>
+              </div>
+              {/* tools */}
+              <div className="d-flex align-items-center gap-5 mb-2">
+                <p className="fw-semibold mb-0">Tools</p>
+                <p className="small mb-0">
+                  {payload.tools.map((k) => k.tool.tool_name).join(", ") ||
+                    "No tools added"}
+                </p>
+              </div>
+            </CardBody>
           </Card>
         </Col>
 
@@ -166,15 +224,15 @@ const TemplateH = () => {
               <img
                 src={`https://ekazi.co.tz/${profile.picture}`}
                 alt="profile"
-                className="rounded-circle border border-3 border-white"
+                className=" border border-3 border-white"
                 width="100"
                 height="100"
               />
             </div>
           ))}
 
-          {/* About */}
-          <div className="small mb-4">
+          {/* Personality */}
+          {/* <div className="small mb-4">
             <h5 className="border-bottom pb-1 text-uppercase">Personalities</h5>
             <ul>
               {personalities.map((personality) => (
@@ -183,11 +241,33 @@ const TemplateH = () => {
                 </li>
               ))}
             </ul>
+          </div> */}
+
+          {/* Language */}
+          <div className="small mb-4">
+            <h5
+              className="border-bottom fw-bold pb-1 text-uppercase"
+              style={{ fontSize: "1rem" }}
+            >
+              Language
+            </h5>
+            <ul>
+              {languages.map((language) => (
+                <li className="small text-start">
+                  {language.language.language_name}
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Contact Info */}
           <div className="small mb-4">
-            <h5 className="border-bottom text-uppercase mb-2">Contact Me</h5>
+            <h5
+              className="fw-bold border-bottom text-uppercase mb-2"
+              style={{ fontSize: "1rem" }}
+            >
+              Contact Me
+            </h5>
             <ul>
               <li>{payload.phone.phone_number}</li>
               {users.map((user) => (
@@ -201,7 +281,12 @@ const TemplateH = () => {
 
           {/* Education */}
           <div className="mb-4">
-            <h5 className="border-bottom pb-1 text-uppercase">Education</h5>
+            <h5
+              className="fw-bold border-bottom pb-1 text-uppercase"
+              style={{ fontSize: "1rem" }}
+            >
+              Education
+            </h5>
             {education.length > 0 ? (
               <ul className="small ps-3 text-start">
                 {education.map((edu, i) => (
@@ -219,19 +304,34 @@ const TemplateH = () => {
             )}
           </div>
 
-          {/* Skills */}
-          {/* <div>
-            <h5 className="border-bottom pb-1 text-uppercase">Skills</h5>
-            {skills.length > 0 ? (
-              <ul className="small ps-3 text-start">
-                {skills.map((skill, i) => (
-                  <li key={i}>{skill.knowledge}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No skills listed.</p>
-            )}
-          </div> */}
+          {/* Referees */}
+          <div className="border-0 p-0">
+            <div
+              className="fw-bold text-uppercase border-bottom mb-2"
+              style={{ fontSize: "1rem" }}
+            >
+              Referees
+            </div>
+            <ul className="p-0" style={{ fontSize: "0.9rem" }}>
+              {referees.length > 0 ? (
+                referees.map((referee, index) => (
+                  <li key={index} className="mb-2 text-start">
+                    <h6 className="d-flex justify-content-between">
+                      {`${referee.first_name} ${referee.middle_name} ${referee.last_name}`}
+                    </h6>
+                    <p className="small mb-1">
+                      <em>{referee.referee_position}</em>
+                    </p>
+                    <p className="small mb-0">{referee.employer}</p>
+                    <p className="small mb-0">{referee.email}</p>
+                    <p className="small mb-0">{referee.phone}</p>
+                  </li>
+                ))
+              ) : (
+                <p>No referees added.</p>
+              )}
+            </ul>
+          </div>
         </Col>
       </Row>
     </Container>
