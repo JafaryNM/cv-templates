@@ -1,5 +1,11 @@
 body {
-  font-family: "Outfit", sans-serif;
-  font-optical-sizing: auto;
-  font-style: normal;
+  font-family: "EB Garamond", serif !important;
+}
+
+text-justify {
+  text-align: justify !important;
+}
+
+span.border.badge.text-dark.bg-light {
+  font-size: 10px !important;
 }

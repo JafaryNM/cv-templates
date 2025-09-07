@@ -1,273 +1,618 @@
-import React from "react";
-import { Container, Row, Col, Card, Badge, Image } from "react-bootstrap";
+// TemplateC.jsx
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Spinner,
+  Alert,
+  ListGroup,
+  Badge,
+} from "react-bootstrap";
+import { FiMail, FiPhone, FiMapPin, FiLinkedin } from "react-icons/fi";
 
-const TemplateC = () => {
-  const skills = [
-    "Customer Service",
-    "POS Systems Operation",
-    "Sales Skills",
-    "Teamwork",
-    "Inventory Management",
-    "Marketing",
-    "Communication and recordkeeping",
-    "Retail merchandising standards",
-  ];
+const API = "https://ekazi.co.tz/api/cv/cv_builder/30750";
+const CV_BASE = "https://ekazi.co.tz";
+const BRAND = "#1756a5";
+const BRAND_DARK = "#0e3668";
+const BRAND_LIGHT = "#e6eef8";
 
-  const experiences = [
-    {
-      title: "Sales Associate",
-      company: "Reids General Store",
-      period: "02/2017 - Current",
-      location: "Monrovia of Seniles - Jacadine, Tanzania",
-      responsibilities: [
-        "Maintain retail stocks on floor by efficiently restocking and cross selling product",
-        "Processed post boxes by leveraging inventory attention to detail and ability to identify and investigate customer concerns",
-        "Processed payments and maintained accurate account to meet financial standards for businesses",
-      ],
-    },
-    {
-      title: "Barista",
-      company: "Seest Town Cafe",
-      period: "Current",
-      location: "Jacadine, Tanzania",
-      responsibilities: [
-        "Fulfilled customer coffee and beverage ordering average orders daily by 3 job POS (thirty)",
-        "Managed inventory of over 300 customers daily with efficient retail merchandising standards",
-        "Trained entire staff of business in new mobile programs offerings and conventions",
-        "Developed creative and appealing sales and techniques and instructed customers on methods",
-      ],
-    },
-    {
-      title: "Sales Team Member",
-      company: "Majectic fast food",
-      period: "",
-      location: "Jacadine, Tanzania",
-      responsibilities: [
-        "Participated at sales transactions accurately and promptly to prevent long customer wait times",
-        "Stocked requisition dining items into POS terminal, modifying with additional options and sales suggestion prompts",
-        "Accurately made change for cash transactions",
-        "Certified extent and bagging items for easy transport",
-        "Completed opening, closing and shift charge tasks to promote store efficiency",
-        "Maintained and supplied food bars and supplied in good condition with promotional strategies",
-        "Fast customer and food preparation areas clean and well-organized for maximum efficiency",
-      ],
-    },
-  ];
+export default function TemplateC() {
+  const [payload, setPayload] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(API)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((j) => {
+        setPayload(j?.data || {});
+        setLoading(false);
+      })
+      .catch((e) => {
+        setError(e.message || "Failed to load profile");
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <Container
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "60vh" }}
+      >
+        <Spinner animation="border" role="status" />
+        <span className="ms-3">Loading CV…</span>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="py-4">
+        <Alert variant="danger" className="mb-0">
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  const profiles = Array.isArray(payload?.applicant_profile)
+    ? payload.applicant_profile
+    : [];
+  const profile = profiles[0] || {};
+  const experiences = Array.isArray(payload?.experience)
+    ? payload.experience
+    : [];
+  const referees = Array.isArray(payload?.referees) ? payload.referees : [];
+  const addresses = Array.isArray(payload?.address) ? payload.address : [];
+  const education = Array.isArray(payload?.education) ? payload.education : [];
+  const languages = Array.isArray(payload?.language) ? payload.language : [];
+  const knowledge = Array.isArray(payload?.knowledge) ? payload.knowledge : [];
+  const software = Array.isArray(payload?.software) ? payload.software : [];
+  const culture = Array.isArray(payload?.culture) ? payload.culture : [];
+  const personalities = Array.isArray(payload?.applicant_personality)
+    ? payload.applicant_personality
+    : [];
+
+  const phone =
+    payload?.phone?.phone_number ||
+    payload?.phone?.number ||
+    payload?.user?.[0]?.phone ||
+    "—";
+  const email = payload?.user?.[0]?.email || payload?.email?.email || "—";
+  const location = addresses?.[0]
+    ? `${addresses[0]?.region_name || ""}${
+        addresses[0]?.name ? ", " + addresses[0].name : ""
+      }`
+    : "—";
+  const linkedin =
+    payload?.socials?.linkedin || "www.linkedin.com/company/empower-limited";
+
+  const fullName =
+    `${profile.first_name || ""} ${profile.middle_name || ""} ${
+      profile.last_name || ""
+    }`
+      .replace(/\s+/g, " ")
+      .trim() || "—";
+
+  const currentPosition =
+    payload?.current_position ||
+    payload?.experience?.[0]?.position?.position_name ||
+    "—";
+
+  const intro =
+    payload?.careers?.[0]?.career ||
+    payload?.objective?.objective ||
+    "Professional summary not provided.";
+
+  function normalizeBulletText(t = "") {
+    return t.replace(/^•\s*/, "").trim();
+  }
+  function splitLines(text = "") {
+    return text
+      .split("\n")
+      .map((t) => normalizeBulletText(t))
+      .filter(Boolean);
+  }
+
+  const workRows = experiences.map((e) => ({
+    org:
+      e?.employer?.employer_name ||
+      e?.institution ||
+      e?.organization ||
+      e?.company ||
+      "—",
+    dates: `${formatMY(e?.start_date)} — ${formatMY(e?.end_date) || "Present"}`,
+    role: e?.position?.position_name || e?.title || "—",
+    bullets: splitLines(e?.responsibility || ""),
+  }));
 
   return (
-    <Container
-      fluid
-      className="p-0 mb-4 px-5"
-      style={{
-        width: "210mm",
-        minHeight: "297mm",
-        margin: "auto",
-        backgroundColor: "#fff",
-        padding: "5mm",
-        fontFamily: "sans-serif",
-        color: "#333",
-        boxShadow: "0 0 5px rgba(0,0,0,0.2)",
-      }}
-    >
-      {/* Header */}
-      <Row>
-        <Col
-          style={{
-            width: "100%",
-            height: "30px",
-            backgroundColor: "#2c5aa0",
-            marginBottom: "32px",
-          }}
-        ></Col>
-      </Row>
-
-      <Row>
-        {/* Left Column */}
-        <Col lg={8} className="text-start">
-          {/* Name */}
-          <div>
-            <h4 className="mb-1" style={{ fontWeight: "700" }}>
-              MARIAM MUSSA
-            </h4>
-            <hr
-              style={{
-                width: "100%",
-                height: "3px",
-                backgroundColor: "#6c757d",
-              }}
-              className="mt-0"
-            />
-          </div>
-
-          {/* Summary Card */}
-          <Card className="mb-4 p-0 shadow-sm border-0">
-            <Card.Header
-              style={{
-                fontWeight: "bold",
-                fontSize: "1.2rem",
-              }}
+    <Container className="my-4">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+      <Card className="shadow-sm overflow-hidden">
+        <Row className="g-0">
+          <Col xs={12} lg={4} className="border-end">
+            <div
+              className="position-relative"
+              style={{ background: BRAND_LIGHT, height: 240 }}
             >
-              SUMMARY
-            </Card.Header>
-            <Card.Body>
-              <p
-                className="mb-0"
-                style={{ lineHeight: "1.6", color: "#495057" }}
+              <div
+                style={{
+                  position: "absolute",
+                  right: 32,
+                  top: 28,
+                  width: 34,
+                  height: 110,
+                  background: BRAND,
+                  clipPath: "polygon(30% 0, 100% 0, 70% 100%, 0 100%)",
+                  boxShadow: "0 6px 10px rgba(23,86,165,.25)",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: 28,
+                  bottom: -46,
+                  width: 210,
+                  height: 210,
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  boxShadow: "0 12px 24px rgba(0,0,0,.15)",
+                  background: "#fff",
+                }}
               >
-                Customer-focused Retail Sales professional with solid
-                understanding of retail dynamics, marketing and customer
-                service. Efficient team player experience providing quality
-                product recommendations and solutions to satisfy customer needs
-                and exceed expectations. Demonstrated record of driving both
-                customer loyalty programs and boost income.
-              </p>
-            </Card.Body>
-          </Card>
-
-          {/* Experience Card */}
-          <Card className="shadow-sm border-0 p-0">
-            <Card.Header
-              style={{
-                fontWeight: "bold",
-                fontSize: "1.2rem",
-              }}
-            >
-              EXPERIENCE
-            </Card.Header>
-            <Card.Body>
-              {experiences.map((exp, index) => (
-                <div
-                  key={index}
-                  className={
-                    index < experiences.length - 1 ? "mb-4 pb-4" : "mb-0"
+                <img
+                  src={
+                    profile?.picture
+                      ? `${CV_BASE}/${profile.picture}`
+                      : "https://placehold.co/500x500?text=Photo"
                   }
-                  style={{
-                    borderBottom:
-                      index < experiences.length - 1
-                        ? "1px solid #dee2e6"
-                        : "none",
-                  }}
-                >
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <h5
-                        className="mb-1"
-                        style={{ color: "#2c5aa0", fontWeight: "600" }}
-                      >
-                        {exp.title}
-                      </h5>
-                      <h6 className="mb-1 text-muted">{exp.company}</h6>
-                      <small className="text-muted">{exp.location}</small>
-                    </div>
-                    {exp.period && (
-                      <Badge bg="secondary" className="ms-2">
-                        {exp.period}
-                      </Badge>
-                    )}
-                  </div>
-                  <ul className="ps-3" style={{ color: "#495057" }}>
-                    {exp.responsibilities.map((resp, respIndex) => (
-                      <li
-                        key={respIndex}
-                        className="mb-1"
-                        style={{ lineHeight: "1.5" }}
-                      >
-                        {resp}
+                  alt="profile"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={(e) =>
+                    (e.currentTarget.src =
+                      "https://placehold.co/500x500?text=Photo")
+                  }
+                />
+              </div>
+            </div>
+
+            <div
+              className="px-3 px-lg-3"
+              style={{ paddingTop: 60, paddingBottom: 24 }}
+            >
+              <AsideCard title="Address">
+                <div className="text-secondary">{location}</div>
+              </AsideCard>
+
+              <AsideCard title="Phone">
+                <div className="text-secondary">{phone}</div>
+              </AsideCard>
+
+              <AsideCard title="Email">
+                <div className="text-secondary">{email}</div>
+              </AsideCard>
+
+              <AsideCard title="Contacts">
+                <ListGroup variant="flush">
+                  <ListGroup.Item className="px-0 d-flex align-items-center gap-2">
+                    <span
+                      className="d-inline-grid place-items-center rounded-pill"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        background: BRAND,
+                        color: "#fff",
+                      }}
+                    >
+                      <FiMail />
+                    </span>
+                    <span className="text-wrap">{email}</span>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="px-0 d-flex align-items-center gap-2">
+                    <span
+                      className="d-inline-grid place-items-center rounded-pill"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        background: BRAND,
+                        color: "#fff",
+                      }}
+                    >
+                      <FiPhone />
+                    </span>
+                    <span>{phone}</span>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="px-0 d-flex align-items-center gap-2">
+                    <span
+                      className="d-inline-grid place-items-center rounded-pill"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        background: BRAND,
+                        color: "#fff",
+                      }}
+                    >
+                      <FiMapPin />
+                    </span>
+                    <span className="text-wrap">{location}</span>
+                  </ListGroup.Item>
+                  <ListGroup.Item className="px-0 d-flex align-items-center gap-2">
+                    <span
+                      className="d-inline-grid place-items-center rounded-pill"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        background: BRAND,
+                        color: "#fff",
+                      }}
+                    >
+                      <FiLinkedin />
+                    </span>
+                    <span className="text-wrap">{linkedin}</span>
+                  </ListGroup.Item>
+                </ListGroup>
+              </AsideCard>
+
+              <AsideCard title="Languages">
+                {languages.length ? (
+                  <ul className="mb-0 ps-3">
+                    {languages.map((l, i) => (
+                      <li key={`lang-${i}`} className="mb-1">
+                        {l?.language?.language_name || "Language"}
                       </li>
                     ))}
                   </ul>
-                </div>
-              ))}
-            </Card.Body>
-          </Card>
-        </Col>
+                ) : (
+                  <div className="text-muted small">—</div>
+                )}
+              </AsideCard>
 
-        {/* Right Column */}
+              <AsideCard title="Skills">
+                {knowledge.length ? (
+                  <ul className="mb-0 ps-3">
+                    {knowledge.map((k, i) => (
+                      <li key={`k-${i}`} className="mb-1">
+                        {k?.knowledge?.knowledge_name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-muted small">—</div>
+                )}
+              </AsideCard>
 
-        <Col lg={4} className="mb-4">
-          {/* Header Card */}
-          <div
-            style={{
-              background: "linear-gradient(135deg, #2c5aa0 0%, #1e3a5f 100%)",
-              color: "white",
-              padding: "16px",
-              marginBottom: "16px",
-            }}
-          >
-            <div className="mb-3 d-flex justify-content-center">
-              <Image
-                src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+Cjx0ZXh0IHg9IjUwIiB5PSI1OCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjM2IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+TU08L3RleHQ+Cjwvc3ZnPgo="
-                roundedCircle
-                width="100"
-                height="100"
-                className="mb-3"
-                style={{ border: "4px solid rgba(255,255,255,0.3)" }}
-              />
+              <AsideCard title="Software">
+                {software.length ? (
+                  <ul className="mb-0 ps-3">
+                    {software.map((s, i) => (
+                      <li key={`s-${i}`} className="mb-1">
+                        {s?.software?.software_name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-muted small">—</div>
+                )}
+              </AsideCard>
+
+              <AsideCard title="Culture Fit">
+                {culture.length ? (
+                  <ul className="mb-0 ps-3">
+                    {culture.map((c, i) => (
+                      <li key={`c-${i}`} className="mb-1">
+                        {c?.culture?.culture_name || c?.name || c}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <ul className="mb-0 ps-3">
+                    {[
+                      "Teamwork & Collaboration",
+                      "Integrity & Accountability",
+                      "Customer-Centered",
+                      "Continuous Learning",
+                      "Results Oriented",
+                    ].map((c, i) => (
+                      <li key={`dc-${i}`} className="mb-1">
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </AsideCard>
+
+              <AsideCard title="Personality">
+                {personalities.length ? (
+                  <ul className="mb-0 ps-3">
+                    {personalities.map((p, i) => (
+                      <li key={`p-${i}`} className="mb-1">
+                        {p?.personality?.personality_name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-muted small">—</div>
+                )}
+              </AsideCard>
+
+              <AsideCard title="Referees">
+                {referees.length ? (
+                  <div className="d-grid gap-3">
+                    {referees.map((r, i) => {
+                      const nm = [r.first_name, r.middle_name, r.last_name]
+                        .filter(Boolean)
+                        .join(" ");
+                      return (
+                        <Card
+                          key={r.id ?? i}
+                          className="border-0 border-start"
+                          style={{ borderLeftWidth: 3, borderLeftColor: BRAND }}
+                        >
+                          <Card.Body className="py-2 px-3">
+                            <div className="fw-semibold">{nm || "—"}</div>
+                            <div className="text-muted">
+                              {r?.referee_position || "—"}
+                            </div>
+                            <div className="small">{r?.employer || "—"}</div>
+                            <div className="small">Tel: {r?.phone || "—"}</div>
+                            <div className="small">
+                              Email: {r?.email || "—"}
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-muted small">—</div>
+                )}
+              </AsideCard>
             </div>
-          </div>
+          </Col>
 
-          {/* Contact Card */}
-          <Card className="mb-4 p-0 shadow-sm border-0 text-start">
-            <Card.Header
-              style={{
-                fontWeight: "bold",
-                fontSize: "1.1rem",
-              }}
-            >
-              CONTACT
-            </Card.Header>
-            <Card.Body>
-              <div className="mb-3">
-                <strong style={{ color: "#2c5aa0" }}>Address:</strong>
-                <div>Chekabwe Jemicahina</div>
-              </div>
-              <div className="mb-3">
-                <strong style={{ color: "#2c5aa0" }}>Phone:</strong>
-                <div>+255 752 158</div>
-              </div>
-              <div className="mb-0">
-                <strong style={{ color: "#2c5aa0" }}>Email:</strong>
-                <div>m.mussa@email.com</div>
-              </div>
-            </Card.Body>
-          </Card>
-
-          {/* Skills Card */}
-          <Card className="shadow-sm border-0 p-0">
-            <Card.Header
-              style={{
-                fontWeight: "bold",
-                fontSize: "1.1rem",
-                textAlign: "start",
-              }}
-            >
-              SKILLS
-            </Card.Header>
-            <Card.Body>
-              <div className="d-flex flex-wrap">
-                {skills.map((skill, index) => (
-                  <Badge
-                    key={index}
-                    bg="light"
-                    text="dark"
-                    className="me-2 mb-2 p-2"
+          <Col xs={12} lg={8}>
+            <div className="p-3 p-lg-4">
+              <div className="pb-3 mb-3 border-bottom">
+                <div
+                  className="position-relative"
+                  style={{ height: 30, marginBottom: 6 }}
+                >
+                  <div
                     style={{
-                      fontSize: "0.85rem",
-                      fontWeight: "normal",
-                      border: "1px solid #dee2e6",
+                      position: "absolute",
+                      left: 0,
+                      top: 6,
+                      width: 46,
+                      height: 18,
+                      background: BRAND,
+                      clipPath: "polygon(30% 0, 100% 0, 80% 100%, 10% 100%)",
                     }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 56,
+                      top: 8,
+                      width: 14,
+                      height: 14,
+                      background: BRAND_DARK,
+                      clipPath: "polygon(30% 0, 100% 0, 80% 100%, 10% 100%)",
+                    }}
+                  />
+                  <Badge
+                    bg="dark"
+                    className="position-absolute end-0 top-0 rounded-pill fw-semibold"
                   >
-                    {skill}
+                    Curriculum Vitae
                   </Badge>
-                ))}
+                </div>
+                <h1
+                  className="fw-bold"
+                  style={{ fontSize: 32, color: "#1f2937", marginBottom: 2 }}
+                >
+                  {fullName}
+                </h1>
+                <div className="text-muted fs-5">{currentPosition}</div>
+                <div
+                  className="text-uppercase fw-bold mt-2"
+                  style={{ color: BRAND, letterSpacing: ".02em" }}
+                >
+                  Introduction
+                </div>
+                <p className="mb-0 text-justify">{intro}</p>
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+
+              <Section title="Work Experience" accent>
+                {workRows.length ? (
+                  <div className="d-grid gap-4">
+                    {workRows.map((w, i) => (
+                      <Card
+                        key={i}
+                        className="border-0 border-start"
+                        style={{
+                          borderLeftColor: BRAND_DARK,
+                          borderLeftWidth: 4,
+                        }}
+                      >
+                        <Card.Body className="py-3">
+                          <div className="d-flex flex-wrap justify-content-between gap-2">
+                            <div className="fw-semibold">{w.org}</div>
+                            <div className="text-muted">{w.dates}</div>
+                          </div>
+                          <div className="text-muted">{w.role}</div>
+                          {w.bullets.length ? (
+                            <ul
+                              className="mb-0 mt-2"
+                              style={{ paddingLeft: "1.2rem" }}
+                            >
+                              {w.bullets.map((b, j) => (
+                                <li key={j} className="mb-1">
+                                  {b}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </Card.Body>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-muted">—</div>
+                )}
+              </Section>
+
+              <Section title="Education" accent>
+                <Card className="border">
+                  <div
+                    className="position-relative text-white"
+                    style={{ background: BRAND }}
+                  >
+                    <Row className="g-0 fw-semibold">
+                      <Col
+                        xs={6}
+                        className="px-3 py-2 border-end"
+                        style={{ borderColor: "rgba(255,255,255,.25)" }}
+                      >
+                        School/College
+                      </Col>
+                      <Col
+                        xs={4}
+                        className="px-3 py-2 border-end"
+                        style={{ borderColor: "rgba(255,255,255,.25)" }}
+                      >
+                        Course/Degree
+                      </Col>
+                      <Col xs={2} className="px-3 py-2">
+                        Year
+                      </Col>
+                    </Row>
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: 0,
+                        top: 0,
+                        width: 36,
+                        height: "100%",
+                        background: `linear-gradient(180deg, ${BRAND}, ${BRAND_DARK})`,
+                        clipPath: "polygon(40% 0, 100% 0, 100% 100%, 0 100%)",
+                      }}
+                    />
+                  </div>
+                  <div>
+                    {education.length ? (
+                      education
+                        .slice()
+                        .sort(
+                          (a, b) =>
+                            new Date(b?.ended || 0) - new Date(a?.ended || 0)
+                        )
+                        .map((ed, i) => (
+                          <Row key={i} className="g-0 border-top">
+                            <Col xs={6} className="px-3 py-2 border-end">
+                              {ed?.college?.college_name ||
+                                ed?.institution ||
+                                "—"}
+                            </Col>
+                            <Col xs={4} className="px-3 py-2 border-end">
+                              {ed?.course?.course_name || ed?.degree || "—"}
+                            </Col>
+                            <Col xs={2} className="px-3 py-2">
+                              {formatY(ed?.ended) ||
+                                formatY(ed?.started) ||
+                                "—"}
+                            </Col>
+                          </Row>
+                        ))
+                    ) : (
+                      <div className="px-3 py-2">—</div>
+                    )}
+                  </div>
+                </Card>
+              </Section>
+
+              <div className="text-center mt-3">
+                <a
+                  href="https://www.empower.co.tz"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn fw-bold"
+                  style={{ background: BRAND, color: "#fff" }}
+                >
+                  www.empower.co.tz
+                </a>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Card>
+      <style>{`
+        body{font-family:"Outfit",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif}
+        .text-justify{text-align:justify}
+      `}</style>
     </Container>
   );
-};
+}
 
-export default TemplateC;
+function AsideCard({ title, children }) {
+  return (
+    <Card className="border-0 mb-3">
+      <div
+        className="d-inline-block bg-white text-dark px-3 py-1 rounded-pill fw-bold border"
+        style={{ boxShadow: "0 1px 0 rgba(0,0,0,.05)", width: "auto" }}
+      >
+        {title}
+      </div>
+      <Card.Body className="px-0 pt-2 pb-0">{children}</Card.Body>
+    </Card>
+  );
+}
+
+function Section({ title, accent = false, children }) {
+  return (
+    <div className="mt-3">
+      <div
+        className="d-flex align-items-center gap-2 mb-2 fw-bold"
+        style={{ color: "#202020", fontSize: "1.05rem" }}
+      >
+        <span
+          className={`px-2 py-1 rounded ${accent ? "text-white" : "text-dark"}`}
+          style={{ background: accent ? "#1756a5" : "#f8f9fa" }}
+        >
+          {title}
+        </span>
+      </div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function formatMY(d) {
+  if (!d) return "";
+  try {
+    return new Date(d).toLocaleDateString("en-GB", {
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+function formatY(d) {
+  if (!d) return "";
+  try {
+    return new Date(d).getFullYear();
+  } catch {
+    return "";
+  }
+}
