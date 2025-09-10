@@ -52,7 +52,7 @@ const formatMY = (d) =>
 
 const cvUrl = "https://ekazi.co.tz";
 
-const TemplateH = () => {
+const TemplateB = () => {
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -499,4 +499,4 @@ const TemplateH = () => {
   );
 };
 
-export default TemplateH;
+export default TemplateB;
